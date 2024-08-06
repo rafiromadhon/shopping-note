@@ -32,11 +32,19 @@ export default function App() {
         setItems((items) => items.filter((item) => item.id !== id));
     }
 
+    function handleToggleItem(id){
+        setItems((items) => items.map((item) => (item.id === id ? {...item, checked: !item.checked} : item)));
+    }
+
+    function handleClearItems(){
+        setItems([]);
+    }
+
     return (
     <div className="app">
         <Header />
         <Form onAddItem={handleAddItem} />
-        <GroceryList items={items} onDeleteItem={handleDeleteItem}/>
+        <GroceryList items={items} onDeleteItem={handleDeleteItem} onToggleItem={handleToggleItem} onClearItems={handleClearItems}/>
         <Footer />
     </div>
   )
@@ -86,32 +94,40 @@ function Form({onAddItem}){
     )
 }
 
-function GroceryList({items, onDeleteItem}){
+function GroceryList({items, onDeleteItem, onToggleItem, onClearItems}){
+    const [sortBy, setSortBy] = useState('input');
+
+    let sortedItems;
+
+    if (sortBy === 'input') {
+        sortedItems = items;
+    }
+
     return (
         <>
-            <div className="list">
-      <ul>
-        {items.map((item) => (
-            <Item item={item} key={item.id} onDeleteItem={onDeleteItem}/>
-        ))}
-      </ul>
+        <div className="list">
+        <ul>
+            {sortedItems.map((item) => (
+                <Item item={item} key={item.id} onDeleteItem={onDeleteItem} onToggleItem={onToggleItem}/>
+            ))}
+        </ul>
     </div>
     <div className="actions">
-      <select>
+      <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
         <option value="input">Urutkan berdasarkan urutan input</option>
         <option value="name">Urutkan berdasarkan nama barang</option>
         <option value="checked">Urutkan berdasarkan ceklis</option>
       </select>
-      <button>Bersihkan Daftar</button>
+      <button onClick={onClearItems}>Bersihkan Daftar</button>
     </div>
         </>
     )
 }
 
-function Item({item, onDeleteItem}) {
+function Item({item, onDeleteItem, onToggleItem}) {
     return (
         <li key={item.id}>
-                <input type="checkbox" />
+                <input type="checkbox" checked={item.checked} onChange={() => onToggleItem(item.id)}/>
                 <span style={item.checked ? { textDecoration: 'line-through' } : {}}>
                     {item.quantity} {item.name}
                     </span>
